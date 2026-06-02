@@ -11,8 +11,22 @@ import signal
 import websockets
 
 # Global state
-connected_clients = set()
+connected_clients = {}  # websocket -> {"color": [r, g, b]}
 image_payload = None
+draw_history = []  # All draw strokes, replayed to new clients
+
+# Visually distinct colors assigned round-robin to clients
+COLOR_PALETTE = [
+    [231, 76, 60],    # red
+    [46, 134, 193],   # blue
+    [39, 174, 96],    # green
+    [243, 156, 18],   # orange
+    [142, 68, 173],   # purple
+    [26, 188, 156],   # teal
+    [241, 196, 15],   # yellow
+    [52, 73, 94],     # dark slate
+]
+next_color_index = 0
 
 
 def load_image(path):
@@ -51,27 +65,36 @@ def _png_dimensions(raw):
 
 async def handler(websocket):
     """Handle a single client connection."""
-    connected_clients.add(websocket)
+    global next_color_index
+
+    color = COLOR_PALETTE[next_color_index % len(COLOR_PALETTE)]
+    next_color_index += 1
+    connected_clients[websocket] = {"color": color}
+
     remote = websocket.remote_address
-    print(f"[+] Client connected: {remote[0]}:{remote[1]}  ({len(connected_clients)} total)")
+    print(f"[+] Client connected: {remote[0]}:{remote[1]}  color={color}  ({len(connected_clients)} total)")
 
     try:
-        # Send the image to the newly connected client
+        # Send the image, then assigned color, then draw history
         await websocket.send(json.dumps(image_payload))
-        print(f"    Sent image to {remote[0]}:{remote[1]}")
+        await websocket.send(json.dumps({"type": "color_assign", "color": color}))
+        if draw_history:
+            await websocket.send(json.dumps({"type": "draw_history", "strokes": draw_history}))
+        print(f"    Sent image + {len(draw_history)} strokes to {remote[0]}:{remote[1]}")
 
-        # Keep connection alive and listen for future messages (e.g. draw events)
+        # Listen for draw events and broadcast to others
         async for message in websocket:
-            # For now, just echo/broadcast any message to all other clients
             data = json.loads(message)
-            others = connected_clients - {websocket}
-            if others:
-                await asyncio.gather(*(c.send(message) for c in others))
+            if data["type"] == "draw":
+                draw_history.append(data)
+                others = set(connected_clients) - {websocket}
+                if others:
+                    await asyncio.gather(*(c.send(message) for c in others))
 
     except websockets.ConnectionClosed:
         pass
     finally:
-        connected_clients.discard(websocket)
+        del connected_clients[websocket]
         print(f"[-] Client disconnected: {remote[0]}:{remote[1]}  ({len(connected_clients)} total)")
 
 
