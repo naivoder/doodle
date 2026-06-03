@@ -4,6 +4,14 @@ Real-time collaborative drawing canvas over WebSocket. One machine hosts a slide
 
 ## Install
 
+First, install [pixi](https://pixi.sh) if you don't have it:
+
+```bash
+curl -fsSL https://pixi.sh/install.sh | bash
+```
+
+Then install the project dependencies:
+
 ```bash
 pixi install
 ```
