@@ -1,3 +1,7 @@
+"""Frosted-glass UI widgets for the doodle client."""
+
+from __future__ import annotations
+
 import math
 
 import pygame
@@ -8,18 +12,23 @@ from .constants import (
     TOOLTIP_BG, UI_CORNER_RADIUS, UI_FONT_SIZE, UI_PADDING,
 )
 
+type ColorHitbox = tuple[pygame.Rect, list[int]]
+type ThicknessHitbox = tuple[pygame.Rect, int]
+
 
 class GlassUI:
+    """Frosted-glass style UI widgets rendered as translucent overlays."""
 
-    def __init__(self):
-        self.font = None
-        self.small_font = None
+    def __init__(self) -> None:
+        self.font: pygame.font.Font | None = None
+        self.small_font: pygame.font.Font | None = None
 
-    def init_fonts(self):
+    def init_fonts(self) -> None:
         self.font = pygame.font.SysFont("Helvetica,Arial,sans-serif", UI_FONT_SIZE)
         self.small_font = pygame.font.SysFont("Helvetica,Arial,sans-serif", UI_FONT_SIZE - 2)
 
-    def _panel(self, target, rect):
+    def _panel(self, target: pygame.Surface, rect: pygame.Rect) -> None:
+        """Draw a glass panel background with highlight edge."""
         panel = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
         pygame.draw.rect(panel, GLASS_BG, panel.get_rect(), border_radius=UI_CORNER_RADIUS)
         pygame.draw.rect(panel, GLASS_BORDER, panel.get_rect(), width=1, border_radius=UI_CORNER_RADIUS)
@@ -27,9 +36,7 @@ class GlassUI:
         pygame.draw.rect(panel, GLASS_HIGHLIGHT, hl, border_radius=1)
         target.blit(panel, rect.topleft)
 
-    # --- Tooltip ---
-
-    def draw_tooltip(self, target, text, pos):
+    def draw_tooltip(self, target: pygame.Surface, text: str, pos: tuple[int, int]) -> None:
         surf = self.small_font.render(text, True, (255, 255, 255))
         tw, th = surf.get_size()
         pad = 6
@@ -41,9 +48,8 @@ class GlassUI:
         target.blit(bg, (tx, ty))
         target.blit(surf, (tx + pad, ty + pad))
 
-    # --- User count badge ---
-
-    def draw_user_count(self, target, count):
+    def draw_user_count(self, target: pygame.Surface, count: int) -> None:
+        """Render the active user count badge in the top-right corner."""
         label = f"{count} user{'s' if count != 1 else ''} online"
         text_surf = self.font.render(label, True, GLASS_TEXT)
         tw, th = text_surf.get_size()
@@ -58,13 +64,15 @@ class GlassUI:
 
     # --- Color picker ---
 
-    def draw_color_icon(self, target, color, pos):
+    def draw_color_icon(self, target: pygame.Surface, color: list[int], pos: tuple[int, int]) -> pygame.Rect:
         rect = pygame.Rect(pos[0], pos[1], ICON_SIZE, ICON_SIZE)
         self._panel(target, rect)
         pygame.draw.rect(target, tuple(color), rect.inflate(-8, -8), border_radius=6)
         return rect
 
-    def draw_color_panel(self, target, current_color, anchor):
+    def draw_color_panel(
+        self, target: pygame.Surface, current_color: list[int], anchor: tuple[int, int],
+    ) -> tuple[list[ColorHitbox], pygame.Rect]:
         cols = COLOR_PICKER_COLUMNS
         rows = math.ceil(len(PICKER_COLORS) / cols)
         swatch, gap = COLOR_SWATCH_SIZE, 4
@@ -77,7 +85,7 @@ class GlassUI:
         rect = pygame.Rect(px, py, pw, ph)
         self._panel(target, rect)
 
-        hitboxes = []
+        hitboxes: list[ColorHitbox] = []
         bx, by = px + UI_PADDING, py + UI_PADDING
         for i, color in enumerate(PICKER_COLORS):
             c, r = i % cols, i // cols
@@ -90,14 +98,18 @@ class GlassUI:
 
     # --- Thickness picker ---
 
-    def draw_thickness_icon(self, target, width, color, pos):
+    def draw_thickness_icon(
+        self, target: pygame.Surface, width: int, color: list[int], pos: tuple[int, int],
+    ) -> pygame.Rect:
         rect = pygame.Rect(pos[0], pos[1], ICON_SIZE, ICON_SIZE)
         self._panel(target, rect)
         r = max(min(width, ICON_SIZE - 10) // 2, 2)
         pygame.draw.circle(target, tuple(color), rect.center, r)
         return rect
 
-    def draw_thickness_panel(self, target, current_width, color, anchor):
+    def draw_thickness_panel(
+        self, target: pygame.Surface, current_width: int, color: list[int], anchor: tuple[int, int],
+    ) -> tuple[list[ThicknessHitbox], pygame.Rect]:
         count = len(THICKNESS_OPTIONS)
         cell = ICON_SIZE + 4
         pw = count * cell + UI_PADDING * 2 - 4
@@ -107,7 +119,7 @@ class GlassUI:
         rect = pygame.Rect(px, py, pw, ph)
         self._panel(target, rect)
 
-        hitboxes = []
+        hitboxes: list[ThicknessHitbox] = []
         bx, by = px + UI_PADDING, py + UI_PADDING
         for i, w in enumerate(THICKNESS_OPTIONS):
             sr = pygame.Rect(bx + i * cell, by, ICON_SIZE, ICON_SIZE)
