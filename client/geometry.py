@@ -1,9 +1,16 @@
-def scale_to_fit(img_w, img_h, target_w, target_h):
+"""Pure-math geometry helpers with zero pygame dependency."""
+
+
+def scale_to_fit(img_w: int, img_h: int, target_w: int, target_h: int) -> tuple[int, int]:
+    """Return (width, height) that fits the image inside the target bounds."""
     ratio = min(target_w / img_w, target_h / img_h)
     return int(img_w * ratio), int(img_h * ratio)
 
 
-def point_to_segment_dist_sq(px, py, ax, ay, bx, by):
+def point_to_segment_dist_sq(
+    px: float, py: float, ax: float, ay: float, bx: float, by: float,
+) -> float:
+    """Squared distance from point (px, py) to segment (ax, ay)-(bx, by)."""
     dx, dy = bx - ax, by - ay
     len_sq = dx * dx + dy * dy
     if len_sq == 0:
