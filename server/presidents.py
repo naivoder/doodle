@@ -1,4 +1,8 @@
-PRESIDENTS = [
+"""All 45 US presidents, ready to be conscripted as usernames. 🫡"""
+
+from typing import Final
+
+PRESIDENTS: Final[list[str]] = [
     "Washington", "Adams", "Jefferson", "Madison", "Monroe",
     "Quincy Adams", "Jackson", "Van Buren", "Harrison", "Tyler",
     "Polk", "Taylor", "Fillmore", "Pierce", "Buchanan",
