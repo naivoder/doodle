@@ -1,13 +1,11 @@
 # Doodle
 
-Real-time shared image viewer over a local network. One machine hosts an image via WebSocket; any number of clients connect and display it using pygame. Designed to be extended into a collaborative drawing canvas.
+Real-time collaborative drawing canvas over WebSocket. One machine hosts a slideshow of images; any number of clients connect with pygame to doodle on them together. Each client is assigned a US president's name (or brings their own).
 
 ## Install
 
 ```bash
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+pixi install
 ```
 
 On Jetson Nano (or other ARM/Linux), install SDL2 first:
@@ -21,17 +19,47 @@ sudo apt-get install -y libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-
 **Server** (on the host machine):
 
 ```bash
-python server.py sample.png
+pixi run serve                          # serves sample.png on port 8765
+pixi run python server.py images/       # serve a directory of images
+pixi run python server.py pic.png --transition crossfade --interval 30
 ```
 
 **Client** (on any machine):
 
 ```bash
-python client.py ws://<server_ip>:8765
+pixi run play                           # connect to localhost:8765
+pixi run python client.py ws://<server_ip>:8765
+pixi run python client.py --name "My Name"   # custom username
 ```
 
-For a local client on the same machine as the server:
+Without `--name`, you'll be randomly assigned a US president.
+
+## Test
 
 ```bash
-python client.py
+pixi run test
+```
+
+## Project Structure
+
+```text
+server/                  # WebSocket server package
+  transitions.py         # Slide transition registry (cut, crossfade)
+  images.py              # Image loading and directory discovery
+  presidents.py          # US president names for random assignment
+  state.py               # ServerState and Pydantic ClientInfo model
+  handler.py             # Connection handler, broadcast, slideshow loop
+  __main__.py            # CLI entrypoint
+
+client/                  # Pygame client package
+  constants.py           # UI layout and rendering constants
+  geometry.py            # Scale-to-fit and point-to-segment math
+  strokes.py             # Pydantic Stroke model and StrokeStore
+  ui.py                  # Frosted-glass UI widgets
+  state.py               # ClientState (image, drawing, UI panels)
+  network.py             # WebSocket reader task
+  app.py                 # Main event/render loop
+  __main__.py            # CLI entrypoint
+
+tests/                   # 113 tests covering server and client logic
 ```
