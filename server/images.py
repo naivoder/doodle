@@ -1,14 +1,17 @@
+"""Image loading and discovery for the slideshow server."""
+
 import base64
 import os
 import random
-import struct
 
 from PIL import Image
+from typing import Final
 
-IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".bmp", ".gif", ".tiff", ".webp"}
+IMAGE_EXTS: Final[set[str]] = {".png", ".jpg", ".jpeg", ".bmp", ".gif", ".tiff", ".webp"}
 
 
-def load_image(path):
+def load_image(path: str) -> tuple[str, int, int]:
+    """Return (base64_data, width, height) for the image at ``path``."""
     img = Image.open(path)
     w, h = img.size
     with open(path, "rb") as f:
@@ -17,7 +20,8 @@ def load_image(path):
     return b64, w, h
 
 
-def discover_images(path):
+def discover_images(path: str) -> list[str]:
+    """Find supported image files at ``path``. Returns a shuffled list."""
     if os.path.isfile(path):
         return [path]
     entries = [
