@@ -1,3 +1,41 @@
+[project]
+name = "doodle"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "pygame>=2.1.0",
+    "websockets>=10.0",
+    "Pillow>=9.0.0",
+    "pydantic>=2.0.0",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+]
+
+[tool.setuptools.packages.find]
+include = ["server*", "client*"]
+
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+
+[tool.pixi.workspace]
+name = "doodle"
+channels = ["conda-forge"]
+platforms = ["linux-64"]
+
+[tool.pixi.pypi-dependencies]
+doodle = { path = ".", editable = true }
+pytest = ">=8.0.0, <10"
+pytest-asyncio = ">=0.23.0, <2"
+
+[tool.pixi.tasks]
+test = "pytest tests/ -v"
+serve = "python server.py"
+play = "python client.py"
+
+[tool.pixi.dependencies]
+python = "3.12.*"

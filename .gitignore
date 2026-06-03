@@ -47,3 +47,6 @@ htmlcov/
 # Distribution
 *.tar.gz
 *.zip
+# pixi environments
+.pixi/*
+!.pixi/config.toml
