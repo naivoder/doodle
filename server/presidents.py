@@ -4,10 +4,10 @@ from typing import Final
 
 PRESIDENTS: Final[list[str]] = [
     "Washington", "Adams", "Jefferson", "Madison", "Monroe",
-    "Quincy Adams", "Jackson", "Van Buren", "Harrison", "Tyler",
+    "Quincy Adams", "Jackson", "Van Buren", "W.H. Harrison", "Tyler",
     "Polk", "Taylor", "Fillmore", "Pierce", "Buchanan",
     "Lincoln", "Johnson", "Grant", "Hayes", "Garfield",
-    "Arthur", "Cleveland", "Harrison", "McKinley", "Roosevelt",
+    "Arthur", "Cleveland", "B. Harrison", "McKinley", "Roosevelt",
     "Taft", "Wilson", "Harding", "Coolidge", "Hoover",
     "FDR", "Truman", "Eisenhower", "Kennedy", "LBJ",
     "Nixon", "Ford", "Carter", "Reagan", "Bush Sr.",
