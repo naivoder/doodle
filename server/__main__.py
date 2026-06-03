@@ -1,3 +1,5 @@
+"""CLI entrypoint for the doodle slideshow server."""
+
 import argparse
 import asyncio
 import signal
@@ -10,7 +12,7 @@ from .state import ServerState
 from .transitions import TRANSITIONS
 
 
-async def main(host, port, image_path, transition_name, slide_interval):
+async def main(host: str, port: int, image_path: str, transition_name: str, slide_interval: int) -> None:
     images = discover_images(image_path)
     if not images:
         print(f"Error: no images found at '{image_path}'")
@@ -20,9 +22,9 @@ async def main(host, port, image_path, transition_name, slide_interval):
     state = ServerState(images, transition_name, slide_interval)
     state.load_current_image()
 
-    stop = asyncio.get_event_loop().create_future()
+    stop: asyncio.Future[None] = asyncio.get_event_loop().create_future()
 
-    def _signal_handler():
+    def _signal_handler() -> None:
         if not stop.done():
             stop.set_result(None)
 
