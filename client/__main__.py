@@ -1,10 +1,12 @@
+"""CLI entrypoint for the doodle client."""
+
 import argparse
 import asyncio
 
 from .app import run_client
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Doodle client")
     parser.add_argument(
         "server",
