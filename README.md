@@ -19,17 +19,17 @@ sudo apt-get install -y libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-
 **Server** (on the host machine):
 
 ```bash
-pixi run serve                          # serves sample.png on port 8765
-pixi run python server.py images/       # serve a directory of images
-pixi run python server.py pic.png --transition crossfade --interval 30
+pixi run serve                                         # serves sample.png on port 8765
+pixi run serve -- images/                              # serve a directory of images
+pixi run serve -- pic.png --transition crossfade --interval 30
 ```
 
 **Client** (on any machine):
 
 ```bash
-pixi run play                           # connect to localhost:8765
-pixi run python client.py ws://<server_ip>:8765
-pixi run python client.py --name "My Name"   # custom username
+pixi run play                                          # connect to localhost:8765
+pixi run play -- ws://<server_ip>:8765                 # connect to remote server
+pixi run play -- ws://<server_ip>:8765 --name "My Name"  # with custom username
 ```
 
 Without `--name`, you'll be randomly assigned a US president.
