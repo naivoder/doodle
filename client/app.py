@@ -1,8 +1,13 @@
+"""Main client loop: events, messages, rendering. The beating heart of the doodle client."""
+
+from __future__ import annotations
+
 import asyncio
 import base64
 import collections
 import json
 import sys
+from typing import Any
 
 import pygame
 import websockets
@@ -13,7 +18,8 @@ from .state import ClientState
 from .ui import GlassUI
 
 
-def _process_events(st, send_queue):
+def _process_events(st: ClientState, send_queue: collections.deque[dict[str, Any]]) -> tuple[int, int]:
+    """Drain the pygame event queue. Returns current mouse position."""
     mouse_pos = pygame.mouse.get_pos()
 
     for event in pygame.event.get():
@@ -57,7 +63,7 @@ def _process_events(st, send_queue):
 
         elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
             if st.drawing and st.current_stroke_points:
-                stroke = {
+                stroke: dict[str, Any] = {
                     "type": "draw",
                     "color": st.my_color,
                     "points": st.current_stroke_points,
@@ -76,7 +82,8 @@ def _process_events(st, send_queue):
     return mouse_pos
 
 
-def _update_hover(st, mouse_pos):
+def _update_hover(st: ClientState, mouse_pos: tuple[int, int]) -> None:
+    """Update panel expansion and stroke hover tooltip state."""
     st.color_expanded = (
         st.color_icon_rect.inflate(6, 6).collidepoint(mouse_pos)
         or (st.color_expanded and st.color_panel_rect.inflate(10, 10).collidepoint(mouse_pos))
@@ -92,7 +99,8 @@ def _update_hover(st, mouse_pos):
         st.hover_name = st.strokes.hit_test(cx, cy)
 
 
-def _process_messages(st, msg_queue):
+def _process_messages(st: ClientState, msg_queue: collections.deque[dict[str, Any]]) -> None:
+    """Apply all queued server messages to client state."""
     while msg_queue:
         msg = msg_queue.popleft()
         mtype = msg["type"]
@@ -123,7 +131,8 @@ def _process_messages(st, msg_queue):
             st.strokes.clear()
 
 
-def _render(st, glass, mouse_pos):
+def _render(st: ClientState, glass: GlassUI, mouse_pos: tuple[int, int]) -> None:
+    """Composite the image, strokes, and UI onto the screen."""
     st.screen.fill((20, 20, 25))
 
     if st.base_surface is not None:
@@ -139,7 +148,6 @@ def _render(st, glass, mouse_pos):
                 st.brush_width, st.scale_factor, st.img_offset,
             )
 
-    # UI toolbar
     sw, sh = st.screen.get_size()
     icon_y = sh - ICON_SIZE - UI_PADDING
     icon_x = UI_PADDING
@@ -165,7 +173,6 @@ def _render(st, glass, mouse_pos):
         st.thick_hitboxes = []
         st.thick_panel_rect = pygame.Rect(0, 0, 0, 0)
 
-    # User count badge
     glass.draw_user_count(st.screen, len(st.users))
 
     if st.hover_name:
@@ -174,7 +181,8 @@ def _render(st, glass, mouse_pos):
     pygame.display.flip()
 
 
-async def run_client(server_url, username=None):
+async def run_client(server_url: str, username: str | None = None) -> None:
+    """Connect to the server and run the pygame event/render loop."""
     pygame.init()
 
     st = ClientState()
@@ -186,8 +194,8 @@ async def run_client(server_url, username=None):
     glass = GlassUI()
     glass.init_fonts()
     clock = pygame.time.Clock()
-    msg_queue = collections.deque()
-    send_queue = collections.deque()
+    msg_queue: collections.deque[dict[str, Any]] = collections.deque()
+    send_queue: collections.deque[dict[str, Any]] = collections.deque()
 
     if username:
         send_queue.append({"type": "name_change", "name": username})
